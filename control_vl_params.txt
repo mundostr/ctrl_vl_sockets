@@ -1,0 +1,11 @@
+offsetEstab
+retardoInicio
+tiempoTrepada
+tiempoTransicion
+tiempoVuelo
+angRemolque
+angCircular
+angDespegue
+angTransicion
+angVuelo
+angDT

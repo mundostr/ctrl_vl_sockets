@@ -1,0 +1,2 @@
+Proyecto para redes de datos distribuidas, independientes de GPS
+https://github.com/meshtastic/Meshtastic-device
