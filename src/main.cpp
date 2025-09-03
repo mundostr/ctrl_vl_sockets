@@ -1,4 +1,65 @@
 #include <Arduino.h>
+
+#define STAB_SERVO_PIN 2
+#define STAB_SERVO_MIN_PULSE 1000
+#define STAB_SERVO_MID_PULSE 1500
+#define STAB_SERVO_MAX_PULSE 2000
+#define SERIAL_BAUDS 115200
+
+volatile uint32_t stab_servo_pulse = STAB_SERVO_MIN_PULSE;
+
+void IRAM_ATTR servoISR() {
+    static bool state = false;
+    
+    if (state) {
+        digitalWrite(STAB_SERVO_PIN, LOW);
+        timer1_write(50000); // 50000 ticks * 0.2 = 10000 = 10ms
+    } else {
+        digitalWrite(STAB_SERVO_PIN, HIGH);
+        timer1_write(stab_servo_pulse / 0.2); // Convert µs to ticks
+    }
+    
+    state = !state;
+}
+
+void setup() {
+    Serial.begin(SERIAL_BAUDS);
+    pinMode(STAB_SERVO_PIN, OUTPUT);
+    
+    timer1_attachInterrupt(servoISR);
+    timer1_enable(TIM_DIV16, TIM_EDGE, TIM_LOOP);
+    timer1_write(50000);
+}
+
+void loop() {
+    static uint8_t counter = 0;
+    static uint32_t test_timer = 0;
+    static uint32_t console_timer = 0;
+
+    if (millis() - test_timer >= 3000 && counter <= 9) {
+        counter++;
+        test_timer = millis();
+        
+        if (stab_servo_pulse == STAB_SERVO_MID_PULSE) {
+            stab_servo_pulse = STAB_SERVO_MAX_PULSE;
+            Serial.println("Move MAX");
+        } else if (stab_servo_pulse == STAB_SERVO_MAX_PULSE) {
+            stab_servo_pulse = STAB_SERVO_MIN_PULSE;
+            Serial.println("Move MIN");
+        } else {
+            stab_servo_pulse = STAB_SERVO_MID_PULSE;
+            Serial.println("Move MID");
+        }
+    }
+
+    if (millis() - console_timer >= 5000) {
+        console_timer = millis();
+        Serial.println("Another task");
+    }
+}
+
+
+/* #include <Arduino.h>
 #include <Bounce2.h>
 #include <LittleFS.h>
 #include <ESP8266WiFi.h>
@@ -159,4 +220,4 @@ void loop() {
 	}
 	
 	ESP.wdtFeed(); // Alimentación watchdog por hardware
-}
+} */
