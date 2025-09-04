@@ -7,9 +7,9 @@ void setup() {
     Serial.begin(SERIAL_BAUDS);
     Serial.println("SYSTEM STARTED");
     #endif
-
-    // Replace for the params recovery
-    flight_params.stabServoInverted = 1;
+    
+    EEPROM.begin(sizeof(params_format));
+    flight_params = load_params();
     
     init_sensors_and_buttons();
     init_servos();
