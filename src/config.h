@@ -1,46 +1,36 @@
-#define LED 2 // Led testigo
-#define SERVO_ESTAB 5 // antes 14, Servo estabilizador
-#define PULSADOR 13 // antes 12, Botón de inicio
-#define GANCHO_FCD 14 // antes 3, Final carrera delantero gancho
-#define GANCHO_FCS 12 // antes 13, Final carrera superior gancho
-// por ahora ponemos el RDT en el analógico, hay que ajustarlo cuando se pueda
-#define RDT A0 // D2, señal de entrada del RDT
-#define ID_SERVO_ESTAB 1 // Identificador del servo estabilizador
-// #define BATERIA A0 // Control nivel batería
+#pragma once
 
-#define FREC_PULSADOR 25 // frecuencia refresco lectura pulsador
-#define FREC_FCS 25 // frecuencia refresco lectura finales carrera
-#define MIN_PWM 500 // Pulso mínimo servos (ms)
-#define MED_PWM 1500 // Pulso medio servos (ms)
-#define MAX_PWM 2500 // Pulso máximo servos (ms)
+#include <Arduino.h>
+#include <Button2.h>
 
-const float KBAT = 0.0041; // Constante p/ ctrl nivel batería 1S
-const float BATMIN = 3.4; // Voltaje mínimo tolerable en batería
-const char* SSIDWF = "ctrlvl02"; // SSID
-const char* CLAVEWF = "ctrlvl02"; // Clave AP wifi
-const char* SSIDWF_ST = "id_wf"; // Datos wifi local (solo debug)
-const char* CLAVEWF_ST = "clave_wf"; // Datos wifi local (solo debug)
-const bool DEBUG = false;
+#define DEBUG
 
-bool procesarUnaVez = true; // Helper p/ ejecutar procesos aislados una sola vez
-bool mostrarRDT = true;
-bool btnPresionado = false; // Flag indicador estado pulsador
-bool ganchoAbierto = false; // Flag gancho abierto o cerrado
-bool clienteAPConectado = false; // Flag indicador de interface config conectada
-bool secuenciaIniciada = false; // Flag p/ indicar inicio secuencia vuelo
+#define LED_PIN 2
+#define BATTERY_PIN A0
+#define STAB_SERVO_PIN 5
+#define PUSH_BUTTON_PIN 13
+#define HOOK_TOP_SENSOR_PIN 12
+#define HOOK_FRONT_SENSOR_PIN 14
 
-uint8_t idClienteSocket; // ID del cliente websocket
-unsigned int paServoEstab = MED_PWM - 1; // Pulso por defecto servo estab
-unsigned int frec_parpadeo_activo = 0; // Helper indicador frecuencia parpadeo actual
-unsigned long timerInicio, timerDetencion; // Timers generales
+#define STAB_SERVO_MIN_PULSE 500
+#define STAB_SERVO_MID_PULSE 1500
+#define STAB_SERVO_MAX_PULSE 2500
 
-struct formatoParametros { int retardoInicio; int tiempoTrepada; int tiempoTransicion; int tiempoVuelo; int offsetEstab; int angRemolque; int angCircular; int angDespegue; int angTransicion; int angVuelo; int angDT; int servoEstabInvertido; } parametros; // parámetros de vuelo
+#define SERIAL_BAUDS 115200
+#define TIMER1_PRESCALER TIM_DIV256
+#define US_TO_TICKS 3.2f // 3.2 for TIM_DIV256
 
-enum modos { LISTO, REMOLCANDO, CIRCULANDO, DESPEGUE, TREPADA, TRANSICION, VUELO, DESTERMALIZADO, DETENIDO } modo; // modos de vuelo
+boolean hook_armed = false;
+boolean hook_closed = false;
+boolean execute_once = true;
+boolean movement_active = false;
+volatile uint32_t stab_servo_pulse = STAB_SERVO_MIN_PULSE;
+uint32_t main_timer = 0;
+uint32_t current_movement_delay = 0;
 
-Scheduler tareas; // Gestor de tareas
-Bounce debouncerPulsador = Bounce(); // Obj ctrl pulsador
-Bounce debouncerFCD = Bounce(); // Obj ctrl final carrera delantero gancho
-Bounce debouncerFCS = Bounce(); // Obj ctrl final carrera superior gancho
-WebSocketsServer webSocket = WebSocketsServer(1337); // Obj ctrl socket
-Servo servoEstab; // Obj ctrl variador
+enum flight_modes { IDLE, TOW, CIRCULAR, TAKEOFF, CLIMB, TRANSITION, FLIGHT, DT };
+flight_modes flight_mode = IDLE;
+flight_modes next_mode = IDLE;
+
+Button2 hook_top_sensor;
+Button2 hook_front_sensor;
