@@ -2,6 +2,10 @@
 
 #include "config.h"
 
+uint32_t ms_to_ticks(uint32_t ms) {
+    return (ms * 1000) / (uint32_t)US_TO_TICKS;
+}
+
 void handle_delayed_movement() {
     if (movement_active) {
         if (millis() - main_timer >= current_movement_delay) {
@@ -9,10 +13,6 @@ void handle_delayed_movement() {
             flight_mode = next_mode;
         }
     }
-}
-
-uint32_t ms_to_ticks(uint32_t ms) {
-    return (ms * 1000) / (uint32_t)US_TO_TICKS;
 }
 
 void change_mode_delayed(flight_modes mode, uint32_t ms_delay) {
@@ -28,7 +28,7 @@ void hook_top_handler(Button2 &btn) {
     if (hook_closed) hook_armed = true;
 
     #ifdef DEBUG
-    Serial.printf("Hook closed: %i\n", hook_closed);
+    Serial.printf("Gancho cerrado: %i\n", hook_closed);
     #endif
 }
 
@@ -37,10 +37,7 @@ void hook_front_handler(Button2 &btn) {
 
     flight_mode = hook_towing ? TOW : CIRCULAR;
     execute_once = true;
-
-    if (hook_armed && !hook_towing && !hook_closed) { // Model launched
-        flight_mode = TAKEOFF;
-    }
+    if (hook_armed && !hook_towing && !hook_closed) flight_mode = TAKEOFF;
 }
 
 void init_system(int save_default_params = false) {
@@ -66,8 +63,8 @@ void init_sensors_and_buttons() {
     hook_closed = hook_top_sensor.isPressed();
 
     #ifdef DEBUG
-    Serial.printf("Hook closed: %i\n", hook_closed);
-    Serial.printf("Hook towing: %i\n", hook_front_sensor.isPressed());
+    Serial.printf("Gancho cerrado: %i\n", hook_closed);
+    Serial.printf("Gancho adelante: %i\n", hook_front_sensor.isPressed());
     #endif
 }
 
@@ -80,7 +77,7 @@ void IRAM_ATTR servos_isr() {
     
     if (state) {
         digitalWrite(STAB_SERVO_PIN, LOW);
-        timer1_write((uint32_t)(US_TO_TICKS * 1000)); // counts down during 10ms with current prescaler
+        timer1_write((uint32_t)(US_TO_TICKS * 1000));
     } else {
         digitalWrite(STAB_SERVO_PIN, HIGH);
         timer1_write((uint32_t)(stab_servo_pulse / US_TO_TICKS));
@@ -94,7 +91,7 @@ void init_servos() {
     
     timer1_attachInterrupt(servos_isr);
     timer1_enable(TIMER1_PRESCALER, TIM_EDGE, TIM_LOOP);
-    timer1_write((uint32_t)(US_TO_TICKS * 1000)); // counts down during 10ms with current prescaler
+    timer1_write((uint32_t)(US_TO_TICKS * 1000));
 
     stab_servo_pulse = STAB_SERVO_MID_PULSE;
 }

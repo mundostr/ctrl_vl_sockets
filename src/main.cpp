@@ -5,7 +5,6 @@
 void setup() {
     #ifdef DEBUG
     Serial.begin(SERIAL_BAUDS);
-    Serial.println("SYSTEM STARTED");
     #endif
     
     init_system(false);
@@ -34,7 +33,7 @@ void loop() {
             flight_mode = IDLE;
                     
             #ifdef DEBUG
-            Serial.println("Towing");
+            Serial.println("Remolcando");
             #endif
 
 			break;
@@ -45,7 +44,7 @@ void loop() {
             flight_mode = IDLE;
                     
             #ifdef DEBUG
-            Serial.println("Circulating");
+            Serial.println("Circulando");
             #endif
 
 			break;
@@ -56,7 +55,7 @@ void loop() {
             change_mode_delayed(CLIMB, 500);
                     
             #ifdef DEBUG
-            Serial.println("Taking off");
+            Serial.println("Despegue");
             #endif
 
 			break;
@@ -67,7 +66,7 @@ void loop() {
             change_mode_delayed(TRANSITION, 1000);
                     
             #ifdef DEBUG
-            Serial.println("Climbing");
+            Serial.println("Trepada");
             #endif
 
 			break;
@@ -78,7 +77,7 @@ void loop() {
             change_mode_delayed(FLIGHT, 750);
                     
             #ifdef DEBUG
-            Serial.println("Transitioning");
+            Serial.println("Transicion");
             #endif
 
 			break;
@@ -89,7 +88,7 @@ void loop() {
             change_mode_delayed(DT, 20 * 1000);
                     
             #ifdef DEBUG
-            Serial.println("Flying");
+            Serial.println("Vuelo");
             #endif
 
 			break;
@@ -99,7 +98,7 @@ void loop() {
             position_stab_servo(STAB_SERVO_MID_PULSE + 1000);
             
             #ifdef DEBUG
-            Serial.println("DT, flight finished");
+            Serial.println("Destermalizado");
             #endif
             
             ESP.deepSleep(0);
@@ -107,19 +106,11 @@ void loop() {
 			break;
 		}
 
-        /* case CONFIG: {
-            handle_config();
-
-            break;
-        } */
-
         default: {
 		}
     }
 
-    if (flight_mode != CONFIG) {
-        handle_delayed_movement();
-        hook_top_sensor.loop();
-        hook_front_sensor.loop();
-    }
+    handle_delayed_movement();
+    hook_top_sensor.loop();
+    hook_front_sensor.loop();
 }

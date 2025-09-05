@@ -29,7 +29,6 @@ WebSocketsServer webSocket = WebSocketsServer(81);
 void IRAM_ATTR servos_isr();
 
 void print_params() {
-    Serial.println("=== Flight Params ===");
     Serial.printf("%-20s: %i\n", "Start Delay (ms)", flight_params.startDelay);
     Serial.printf("%-20s: %i\n", "Stab Servo Inverted", flight_params.stabServoInverted);
     Serial.printf("%-20s: %i\n", "Stab Offset", flight_params.stabOffset);
@@ -44,7 +43,6 @@ void print_params() {
     Serial.printf("%-20s: %i\n", "Transition Angle", flight_params.transitionAngle);
     Serial.printf("%-20s: %i\n", "Flight Angle", flight_params.flightAngle);
     Serial.printf("%-20s: %i\n", "DT Angle", flight_params.dtAngle);
-    Serial.println("=====================");
 }
 
 void save_params() {
@@ -61,7 +59,7 @@ void save_params() {
     timer1_attachInterrupt(servos_isr);
     
     #ifdef DEBUG
-    Serial.println("Params saved");
+    Serial.println("Parametros almacenados");
     #endif
     
     eeprom_busy = false;
@@ -74,37 +72,31 @@ params_format load_params() {
     for (unsigned int i = 0; i < sizeof(params_format); i++) *((byte*)&params + i) = EEPROM.read(i);
 
     #ifdef DEBUG
-    Serial.println("Params recovered");
+    Serial.println("Parametros recuperados");
     #endif
     
     return params;
 }
 
-String flight_params_to_json() {
+void send_flight_params(int id) {
     String json = "{";
-    json += "\"startDelay\":" + String(flight_params.startDelay) + ",";
-    json += "\"stabServoInverted\":" + String(flight_params.stabServoInverted) + ",";
-    json += "\"stabOffset\":" + String(flight_params.stabOffset) + ",";
-    json += "\"takeoffTime\":" + String(flight_params.takeoffTime) + ",";
-    json += "\"climbTime\":" + String(flight_params.climbTime) + ",";
-    json += "\"transitionTime\":" + String(flight_params.transitionTime) + ",";
-    json += "\"flightTime\":" + String(flight_params.flightTime) + ",";
-    json += "\"towAngle\":" + String(flight_params.towAngle) + ",";
-    json += "\"circularAngle\":" + String(flight_params.circularAngle) + ",";
-    json += "\"takeoffAngle\":" + String(flight_params.takeoffAngle) + ",";
-    json += "\"climbAngle\":" + String(flight_params.climbAngle) + ",";
-    json += "\"transitionAngle\":" + String(flight_params.transitionAngle) + ",";
-    json += "\"flightAngle\":" + String(flight_params.flightAngle) + ",";
-    json += "\"dtAngle\":" + String(flight_params.dtAngle);
-    json += "}";
-    
-    return json;
-}
+        json += "\"startDelay\":" + String(flight_params.startDelay) + ",";
+        json += "\"stabServoInverted\":" + String(flight_params.stabServoInverted) + ",";
+        json += "\"stabOffset\":" + String(flight_params.stabOffset) + ",";
+        json += "\"takeoffTime\":" + String(flight_params.takeoffTime) + ",";
+        json += "\"climbTime\":" + String(flight_params.climbTime) + ",";
+        json += "\"transitionTime\":" + String(flight_params.transitionTime) + ",";
+        json += "\"flightTime\":" + String(flight_params.flightTime) + ",";
+        json += "\"towAngle\":" + String(flight_params.towAngle) + ",";
+        json += "\"circularAngle\":" + String(flight_params.circularAngle) + ",";
+        json += "\"takeoffAngle\":" + String(flight_params.takeoffAngle) + ",";
+        json += "\"climbAngle\":" + String(flight_params.climbAngle) + ",";
+        json += "\"transitionAngle\":" + String(flight_params.transitionAngle) + ",";
+        json += "\"flightAngle\":" + String(flight_params.flightAngle) + ",";
+        json += "\"dtAngle\":" + String(flight_params.dtAngle);
+        json += "}";
 
-void send_flight_params(uint8_t id) {
-    String json = flight_params_to_json();
-
-    id == 0 ? webSocket.broadcastTXT(json) : webSocket.sendTXT(id, json);
+    id == -1 ? webSocket.broadcastTXT(json) : webSocket.sendTXT(id, json);
 }
 
 void parse_flight_params(char* payload) {
@@ -114,7 +106,21 @@ void parse_flight_params(char* payload) {
     if (index != -1) {
         String key = data.substring(0, index);
         String value = data.substring(index + 1);
+        
+        if (key == "startDelay") flight_params.startDelay = value.toInt();
+        if (key == "stabServoInverted") flight_params.stabServoInverted = value.toInt();
+        if (key == "stabOffset") flight_params.stabOffset = value.toInt();
+        if (key == "takeoffTime") flight_params.takeoffTime = value.toInt();
+        if (key == "climbTime") flight_params.climbTime = value.toInt();
+        if (key == "transitionTime") flight_params.transitionTime = value.toInt();
         if (key == "flightTime") flight_params.flightTime = value.toInt();
+        if (key == "towAngle") flight_params.towAngle = value.toInt();
+        if (key == "circularAngle") flight_params.circularAngle = value.toInt();
+        if (key == "takeoffAngle") flight_params.takeoffAngle = value.toInt();
+        if (key == "climbAngle") flight_params.climbAngle = value.toInt();
+        if (key == "transitionAngle") flight_params.transitionAngle = value.toInt();
+        if (key == "flightAngle") flight_params.flightAngle = value.toInt();
+        if (key == "dtAngle") flight_params.dtAngle = value.toInt();
     }
 
     print_params();
@@ -134,7 +140,7 @@ void handle_websockets_event(uint8_t num, WStype_t type, uint8_t * payload, size
             
         case WStype_DISCONNECTED:
             #ifdef DEBUG
-            Serial.printf("[%u] Disconnected!\n", num);
+            Serial.printf("[%u] desconectado\n", num);
             #endif
         
         break;
@@ -144,7 +150,7 @@ void handle_websockets_event(uint8_t num, WStype_t type, uint8_t * payload, size
             
             #ifdef DEBUG
             IPAddress ip = webSocket.remoteIP(num);
-            Serial.printf("[%u] Connected from %d.%d.%d.%d\n", num, ip[0], ip[1], ip[2], ip[3]);
+            Serial.printf("[%u] Conectado desde %d.%d.%d.%d\n", num, ip[0], ip[1], ip[2], ip[3]);
             #endif
         }
         
@@ -152,11 +158,11 @@ void handle_websockets_event(uint8_t num, WStype_t type, uint8_t * payload, size
         
         case WStype_TEXT: {
             parse_flight_params((char*)payload);
-            send_flight_params(0);
+            send_flight_params(-1);
             need_to_save_params = true;
 
             #ifdef DEBUG
-            Serial.printf("[%u] Received: %s\n", num, payload);
+            Serial.printf("[%u] Msj recibido: %s\n", num, payload);
             #endif
         }
         
@@ -172,7 +178,7 @@ void init_wifi() {
     webSocket.onEvent(handle_websockets_event);
 
     #ifdef DEBUG
-        Serial.print("AP active in ");
+        Serial.print("AP activo en ");
         Serial.println(WiFi.softAPIP());
     #endif
 }
@@ -201,10 +207,9 @@ void check_for_config() {
         init_wifi();
         delay(100);
         handle_config();
-        // flight_mode = CONFIG;
 
         #ifdef DEBUG
-        Serial.println("Config mode active");
+        Serial.println("Modo CONFIG activo");
         #endif
     }
 }
