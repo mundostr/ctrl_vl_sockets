@@ -26,6 +26,8 @@ struct params_format {
 params_format flight_params;
 WebSocketsServer webSocket = WebSocketsServer(81);
 
+void IRAM_ATTR servos_isr();
+
 void print_params() {
     Serial.println("=== Flight Params ===");
     Serial.printf("%-20s: %i\n", "Start Delay (ms)", flight_params.startDelay);
@@ -53,7 +55,10 @@ void save_params() {
     EEPROM.begin(sizeof(params_format));
     const byte* bytePtr = (const byte*)&flight_params;
     for (unsigned int i = 0; i < sizeof(params_format); i++) EEPROM.write(i, bytePtr[i]);
+    
+    timer1_detachInterrupt();
     EEPROM.commit();
+    timer1_attachInterrupt(servos_isr);
     
     #ifdef DEBUG
     Serial.println("Params saved");
@@ -172,31 +177,34 @@ void init_wifi() {
     #endif
 }
 
+void handle_config() {
+    static uint32_t led_timer = 0;
+
+    while(1) {
+        if (millis() - led_timer >= 500) {
+            led_timer = millis();
+            digitalWrite(LED_PIN, !digitalRead(LED_PIN));
+        }
+    
+        if (need_to_save_params) {
+            need_to_save_params = false;
+            save_params();
+        }
+    
+        webSocket.loop();
+        ESP.wdtFeed();
+    }
+}
+
 void check_for_config() {
     if (hook_front_sensor.isPressed()) {
         init_wifi();
         delay(100);
-        flight_mode = CONFIG;
+        handle_config();
+        // flight_mode = CONFIG;
 
         #ifdef DEBUG
         Serial.println("Config mode active");
         #endif
     }
-}
-
-void handle_config() {
-    static uint32_t led_timer = 0;
-
-    if (millis() - led_timer >= 500) {
-        led_timer = millis();
-        digitalWrite(LED_PIN, !digitalRead(LED_PIN));
-    }
-
-    if (need_to_save_params) {
-        need_to_save_params = false;
-        save_params();
-    }
-
-    webSocket.loop();
-    ESP.wdtFeed();
 }

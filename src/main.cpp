@@ -10,8 +10,8 @@ void setup() {
     
     init_system(false);
     init_sensors_and_buttons();
-    init_servos();
     check_for_config();
+    init_servos();
 }
 
 void loop() {
@@ -107,11 +107,11 @@ void loop() {
 			break;
 		}
 
-        case CONFIG: {
+        /* case CONFIG: {
             handle_config();
 
             break;
-        }
+        } */
 
         default: {
 		}
