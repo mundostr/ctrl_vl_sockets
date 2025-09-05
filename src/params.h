@@ -13,14 +13,14 @@ struct params_format {
     int takeoffTime = 250;
     int climbTime = 750;
     int transitionTime = 500;
-    int flightTime = 180000;
-    int towAngle = 100;
-    int circularAngle = 200;
-    int takeoffAngle = 50;
+    int flightTime = 20000;
+    int towAngle = -10;
+    int circularAngle = -20;
+    int takeoffAngle = -5;
     int climbAngle = 0;
-    int transitionAngle = 600;
-    int flightAngle = 50;
-    int dtAngle = 1000;
+    int transitionAngle = 30;
+    int flightAngle = -5;
+    int dtAngle = -45;
 };
 
 params_format flight_params;
@@ -29,20 +29,20 @@ WebSocketsServer webSocket = WebSocketsServer(81);
 void IRAM_ATTR servos_isr();
 
 void print_params() {
-    Serial.printf("%-20s: %i\n", "Start Delay (ms)", flight_params.startDelay);
-    Serial.printf("%-20s: %i\n", "Stab Servo Inverted", flight_params.stabServoInverted);
-    Serial.printf("%-20s: %i\n", "Stab Offset", flight_params.stabOffset);
-    Serial.printf("%-20s: %i\n", "Takeoff Time (ms)", flight_params.takeoffTime);
-    Serial.printf("%-20s: %i\n", "Climb Time (ms)", flight_params.climbTime);
-    Serial.printf("%-20s: %i\n", "Transition Time (ms)", flight_params.transitionTime);
-    Serial.printf("%-20s: %i\n", "Flight Time (ms)", flight_params.flightTime);
-    Serial.printf("%-20s: %i\n", "Tow Angle", flight_params.towAngle);
-    Serial.printf("%-20s: %i\n", "Circular Angle", flight_params.circularAngle);
-    Serial.printf("%-20s: %i\n", "Takeoff Angle", flight_params.takeoffAngle);
-    Serial.printf("%-20s: %i\n", "Climb Angle", flight_params.climbAngle);
-    Serial.printf("%-20s: %i\n", "Transition Angle", flight_params.transitionAngle);
-    Serial.printf("%-20s: %i\n", "Flight Angle", flight_params.flightAngle);
-    Serial.printf("%-20s: %i\n", "DT Angle", flight_params.dtAngle);
+    Serial.printf("%-20s: %i\n", "Demora partida (ms)", flight_params.startDelay);
+    Serial.printf("%-20s: %i\n", "Invertir servo estabilizador (0 o 1)", flight_params.stabServoInverted);
+    Serial.printf("%-20s: %i\n", "Desplazar servo estabilizador (grados)", flight_params.stabOffset);
+    Serial.printf("%-20s: %i\n", "Tiempo despegue (ms)", flight_params.takeoffTime);
+    Serial.printf("%-20s: %i\n", "Tiempo trepada (ms)", flight_params.climbTime);
+    Serial.printf("%-20s: %i\n", "Tiempo transicion (ms)", flight_params.transitionTime);
+    Serial.printf("%-20s: %i\n", "Tiempo vuelo (ms)", flight_params.flightTime);
+    Serial.printf("%-20s: %i\n", "Angulo remolque (grados)", flight_params.towAngle);
+    Serial.printf("%-20s: %i\n", "Angulo circular (grados)", flight_params.circularAngle);
+    Serial.printf("%-20s: %i\n", "Angulo despegue (grados)", flight_params.takeoffAngle);
+    Serial.printf("%-20s: %i\n", "Angulo trepada (grados)", flight_params.climbAngle);
+    Serial.printf("%-20s: %i\n", "Angulo transicion (grados)", flight_params.transitionAngle);
+    Serial.printf("%-20s: %i\n", "Angulo vuelo (grados)", flight_params.flightAngle);
+    Serial.printf("%-20s: %i\n", "Angulo destermalizado (grados)", flight_params.dtAngle);
 }
 
 void save_params() {

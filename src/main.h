@@ -2,6 +2,20 @@
 
 #include "config.h"
 
+int angle_to_pulse(int angle) {
+    long pulse;
+
+    angle = constrain(angle, -90, 90);
+
+    if (angle < 0) {
+        pulse = map(angle, -90, 0, STAB_SERVO_MIN_PULSE, STAB_SERVO_MID_PULSE);
+    } else {
+        pulse = map(angle, 0, 90, STAB_SERVO_MID_PULSE, STAB_SERVO_MAX_PULSE);
+    }
+
+    return (int)pulse;
+}
+
 uint32_t ms_to_ticks(uint32_t ms) {
     return (ms * 1000) / (uint32_t)US_TO_TICKS;
 }
@@ -68,8 +82,9 @@ void init_sensors_and_buttons() {
     #endif
 }
 
-void position_stab_servo(int position) {
-    stab_servo_pulse = flight_params.stabServoInverted * position;
+void position_stab_servo(int angle) {
+    int pulse = angle_to_pulse(angle);
+    stab_servo_pulse = flight_params.stabServoInverted * pulse;
 }
 
 void IRAM_ATTR servos_isr() {
