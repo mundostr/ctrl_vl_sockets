@@ -30,7 +30,7 @@ void IRAM_ATTR servos_isr();
 
 void print_params() {
     Serial.printf("%-20s: %i\n", "Demora partida (ms)", flight_params.startDelay);
-    Serial.printf("%-20s: %i\n", "Invertir servo estabilizador (0 o 1)", flight_params.stabServoInverted);
+    Serial.printf("%-20s: %i\n", "Invertir servo estabilizador (1 o -1)", flight_params.stabServoInverted);
     Serial.printf("%-20s: %i\n", "Desplazar servo estabilizador (grados)", flight_params.stabOffset);
     Serial.printf("%-20s: %i\n", "Tiempo despegue (ms)", flight_params.takeoffTime);
     Serial.printf("%-20s: %i\n", "Tiempo trepada (ms)", flight_params.climbTime);
