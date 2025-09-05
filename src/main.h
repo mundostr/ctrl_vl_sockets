@@ -2,6 +2,15 @@
 
 #include "config.h"
 
+void handle_delayed_movement() {
+    if (movement_active) {
+        if (millis() - main_timer >= current_movement_delay) {
+            movement_active = false;
+            flight_mode = next_mode;
+        }
+    }
+}
+
 uint32_t ms_to_ticks(uint32_t ms) {
     return (ms * 1000) / (uint32_t)US_TO_TICKS;
 }
@@ -32,6 +41,19 @@ void hook_front_handler(Button2 &btn) {
     if (hook_armed && !hook_towing && !hook_closed) { // Model launched
         flight_mode = TAKEOFF;
     }
+}
+
+void init_system(int save_default_params = false) {
+    pinMode(LED_PIN, OUTPUT);
+    digitalWrite(LED_PIN, 0);
+
+    EEPROM.begin(sizeof(params_format));
+    if (save_default_params) save_params();
+    flight_params = load_params();
+    
+    #ifdef DEBUG
+    print_params();
+    #endif
 }
 
 void init_sensors_and_buttons() {

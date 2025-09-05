@@ -8,12 +8,10 @@ void setup() {
     Serial.println("SYSTEM STARTED");
     #endif
     
-    EEPROM.begin(sizeof(params_format));
-    flight_params = load_params();
-    
+    init_system(false);
     init_sensors_and_buttons();
     init_servos();
-    delay(1000);
+    check_for_config();
 }
 
 void loop() {
@@ -109,17 +107,19 @@ void loop() {
 			break;
 		}
 
+        case CONFIG: {
+            handle_config();
+
+            break;
+        }
+
         default: {
 		}
     }
 
-    if (movement_active) {
-        if (millis() - main_timer >= current_movement_delay) {
-            movement_active = false;
-            flight_mode = next_mode;
-        }
+    if (flight_mode != CONFIG) {
+        handle_delayed_movement();
+        hook_top_sensor.loop();
+        hook_front_sensor.loop();
     }
-    
-    hook_top_sensor.loop();
-    hook_front_sensor.loop();
 }
