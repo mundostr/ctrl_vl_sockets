@@ -9,7 +9,7 @@ void setup() {
     
     init_system(false);
     init_sensors_and_buttons();
-    check_for_config();
+    handle_config();
     init_servos();
 }
 
@@ -29,7 +29,7 @@ void loop() {
         }
 
         case TOW: {
-            position_stab_servo(STAB_SERVO_MID_PULSE + 200);
+            position_stab_servo(flight_params.towAngle);
             flight_mode = IDLE;
                     
             #ifdef DEBUG
@@ -40,7 +40,7 @@ void loop() {
 		}
 
         case CIRCULAR: {
-            position_stab_servo(STAB_SERVO_MID_PULSE + 400);
+            position_stab_servo(flight_params.circularAngle);
             flight_mode = IDLE;
                     
             #ifdef DEBUG
@@ -51,8 +51,8 @@ void loop() {
 		}
 
         case TAKEOFF: {
-            position_stab_servo(STAB_SERVO_MID_PULSE);
-            change_mode_delayed(CLIMB, 500);
+            position_stab_servo(flight_params.takeoffAngle);
+            change_mode_delayed(CLIMB, flight_params.takeoffTime);
                     
             #ifdef DEBUG
             Serial.println("Despegue");
@@ -62,8 +62,8 @@ void loop() {
 		}
 
         case CLIMB: {
-            position_stab_servo(STAB_SERVO_MID_PULSE - 200);
-            change_mode_delayed(TRANSITION, 1000);
+            position_stab_servo(flight_params.climbAngle);
+            change_mode_delayed(TRANSITION, flight_params.climbTime);
                     
             #ifdef DEBUG
             Serial.println("Trepada");
@@ -73,8 +73,8 @@ void loop() {
         }
 
         case TRANSITION: {
-            position_stab_servo(STAB_SERVO_MID_PULSE - 600);
-            change_mode_delayed(FLIGHT, 750);
+            position_stab_servo(flight_params.transitionAngle);
+            change_mode_delayed(FLIGHT, flight_params.transitionTime);
                     
             #ifdef DEBUG
             Serial.println("Transicion");
@@ -84,8 +84,8 @@ void loop() {
 		}
 
         case FLIGHT: {
-            position_stab_servo(STAB_SERVO_MID_PULSE + 100);
-            change_mode_delayed(DT, 20 * 1000);
+            position_stab_servo(flight_params.flightAngle);
+            change_mode_delayed(DT, flight_params.flightTime);
                     
             #ifdef DEBUG
             Serial.println("Vuelo");
@@ -95,7 +95,7 @@ void loop() {
 		}
 
         case DT: {
-            position_stab_servo(STAB_SERVO_MID_PULSE + 1000);
+            position_stab_servo(flight_params.dtAngle);
             
             #ifdef DEBUG
             Serial.println("Destermalizado");

@@ -186,27 +186,24 @@ void init_wifi() {
 void handle_config() {
     static uint32_t led_timer = 0;
 
-    while(1) {
-        if (millis() - led_timer >= 500) {
-            led_timer = millis();
-            digitalWrite(LED_PIN, !digitalRead(LED_PIN));
-        }
-    
-        if (need_to_save_params) {
-            need_to_save_params = false;
-            save_params();
-        }
-    
-        webSocket.loop();
-        ESP.wdtFeed();
-    }
-}
-
-void check_for_config() {
     if (hook_front_sensor.isPressed()) {
         init_wifi();
-        delay(100);
-        handle_config();
+        delay(250);
+        
+        while(1) {
+            if (millis() - led_timer >= 500) {
+                led_timer = millis();
+                digitalWrite(LED_PIN, !digitalRead(LED_PIN));
+            }
+        
+            if (need_to_save_params) {
+                need_to_save_params = false;
+                save_params();
+            }
+        
+            webSocket.loop();
+            ESP.wdtFeed();
+        }
 
         #ifdef DEBUG
         Serial.println("Modo CONFIG activo");
