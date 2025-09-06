@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include <Button2.h>
 
-#define DEBUG
+// #define DEBUG
 
 #define LED_PIN 2
 #define STAB_SERVO_PIN 5

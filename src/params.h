@@ -8,7 +8,6 @@
 
 struct params_format {
     int startDelay = 0;
-    int stabServoInverted = 1;
     int stabOffset = 0;
     int takeoffTime = 250;
     int climbTime = 750;
@@ -21,7 +20,9 @@ struct params_format {
     int transitionAngle = 30;
     int flightAngle = -5;
     int dtAngle = -45;
+    int stabServoInverted = 1;
 };
+const int params_format_total = 14;
 
 params_format flight_params;
 WebSocketsServer webSocket = WebSocketsServer(81);
@@ -29,20 +30,20 @@ WebSocketsServer webSocket = WebSocketsServer(81);
 void IRAM_ATTR servos_isr();
 
 void print_params() {
-    Serial.printf("%-20s: %i\n", "Demora partida (ms)", flight_params.startDelay);
-    Serial.printf("%-20s: %i\n", "Invertir servo estabilizador (1 o -1)", flight_params.stabServoInverted);
-    Serial.printf("%-20s: %i\n", "Desplazar servo estabilizador (grados)", flight_params.stabOffset);
-    Serial.printf("%-20s: %i\n", "Tiempo despegue (ms)", flight_params.takeoffTime);
-    Serial.printf("%-20s: %i\n", "Tiempo trepada (ms)", flight_params.climbTime);
-    Serial.printf("%-20s: %i\n", "Tiempo transicion (ms)", flight_params.transitionTime);
-    Serial.printf("%-20s: %i\n", "Tiempo vuelo (ms)", flight_params.flightTime);
-    Serial.printf("%-20s: %i\n", "Angulo remolque (grados)", flight_params.towAngle);
-    Serial.printf("%-20s: %i\n", "Angulo circular (grados)", flight_params.circularAngle);
-    Serial.printf("%-20s: %i\n", "Angulo despegue (grados)", flight_params.takeoffAngle);
-    Serial.printf("%-20s: %i\n", "Angulo trepada (grados)", flight_params.climbAngle);
-    Serial.printf("%-20s: %i\n", "Angulo transicion (grados)", flight_params.transitionAngle);
-    Serial.printf("%-20s: %i\n", "Angulo vuelo (grados)", flight_params.flightAngle);
-    Serial.printf("%-20s: %i\n", "Angulo destermalizado (grados)", flight_params.dtAngle);
+    Serial.printf("Demora partida (ms): %i\n", flight_params.startDelay);
+    Serial.printf("Invertir servo estabilizador (1 o -1): %i\n", flight_params.stabServoInverted);
+    Serial.printf("Desplazar servo estabilizador (grados): %i\n", flight_params.stabOffset);
+    Serial.printf("Tiempo despegue (ms): %i\n", flight_params.takeoffTime);
+    Serial.printf("Tiempo trepada (ms): %i\n", flight_params.climbTime);
+    Serial.printf("Tiempo transicion (ms): %i\n", flight_params.transitionTime);
+    Serial.printf("Tiempo vuelo (ms): %i\n", flight_params.flightTime);
+    Serial.printf("Angulo remolque (grados): %i\n", flight_params.towAngle);
+    Serial.printf("Angulo circular (grados): %i\n", flight_params.circularAngle);
+    Serial.printf("Angulo despegue (grados): %i\n", flight_params.takeoffAngle);
+    Serial.printf("Angulo trepada (grados): %i\n", flight_params.climbAngle);
+    Serial.printf("Angulo transicion (grados): %i\n", flight_params.transitionAngle);
+    Serial.printf("Angulo vuelo (grados): %i\n", flight_params.flightAngle);
+    Serial.printf("Angulo destermalizado (grados): %i\n", flight_params.dtAngle);
 }
 
 void save_params() {
@@ -96,37 +97,46 @@ void send_flight_params(int id) {
         json += "\"dtAngle\":" + String(flight_params.dtAngle);
         json += "}";
 
-    id == -1 ? webSocket.broadcastTXT(json) : webSocket.sendTXT(id, json);
+    webSocket.sendTXT(id, json);
 }
 
-void parse_flight_params(char* payload) {
-    String data = String(payload);
-    int index = data.indexOf('=');
+void parse_flight_params(uint8_t num, const String &message) {
+    int values[params_format_total];
+    int index = 0;
+    int startIndex = 0;
+    int endIndex = message.indexOf('|');
     
-    if (index != -1) {
-        String key = data.substring(0, index);
-        String value = data.substring(index + 1);
-        
-        if (key == "startDelay") flight_params.startDelay = value.toInt();
-        if (key == "stabServoInverted") flight_params.stabServoInverted = value.toInt();
-        if (key == "stabOffset") flight_params.stabOffset = value.toInt();
-        if (key == "takeoffTime") flight_params.takeoffTime = value.toInt();
-        if (key == "climbTime") flight_params.climbTime = value.toInt();
-        if (key == "transitionTime") flight_params.transitionTime = value.toInt();
-        if (key == "flightTime") flight_params.flightTime = value.toInt();
-        if (key == "towAngle") flight_params.towAngle = value.toInt();
-        if (key == "circularAngle") flight_params.circularAngle = value.toInt();
-        if (key == "takeoffAngle") flight_params.takeoffAngle = value.toInt();
-        if (key == "climbAngle") flight_params.climbAngle = value.toInt();
-        if (key == "transitionAngle") flight_params.transitionAngle = value.toInt();
-        if (key == "flightAngle") flight_params.flightAngle = value.toInt();
-        if (key == "dtAngle") flight_params.dtAngle = value.toInt();
+    while (endIndex != -1 && index < params_format_total) {
+        values[index++] = message.substring(startIndex, endIndex).toInt();
+        startIndex = endIndex + 1;
+        endIndex = message.indexOf('|', startIndex);
     }
+    
+    if (index < params_format_total) values[index] = message.substring(startIndex).toInt();
 
-    print_params();
+    // Respetar orden según cadena enviada desde el cliente websockets
+    if (index == params_format_total - 1) {
+        flight_params.startDelay = values[0];
+        flight_params.takeoffTime = values[1];
+        flight_params.climbTime = values[2];
+        flight_params.transitionTime = values[3];
+        flight_params.flightTime = values[4] * 1000; // porque llega en segs
+        flight_params.stabOffset = values[5];
+        flight_params.towAngle = values[6];
+        flight_params.circularAngle = values[7];
+        flight_params.takeoffAngle = values[8];
+        flight_params.climbAngle = values[9];
+        flight_params.transitionAngle = values[10];
+        flight_params.flightAngle = values[11];
+        flight_params.dtAngle = values[12];
+        flight_params.stabServoInverted = values[13];
+
+        need_to_save_params = true;
+        webSocket.sendTXT(num, "{ \"update\":\"ok\" }");
+    }
 }
 
-void handle_websockets_event(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
+void handle_websockets_event(uint8_t num, WStype_t type, uint8_t *payload, size_t length) {
     switch (type) {
         case WStype_BIN:
         case WStype_PING:
@@ -157,12 +167,14 @@ void handle_websockets_event(uint8_t num, WStype_t type, uint8_t * payload, size
         break;
         
         case WStype_TEXT: {
-            parse_flight_params((char*)payload);
-            send_flight_params(-1);
-            need_to_save_params = true;
-
             #ifdef DEBUG
             Serial.printf("[%u] Msj recibido: %s\n", num, payload);
+            #endif
+
+            parse_flight_params(num, String((char*)payload));
+
+            #ifdef DEBUG
+            print_params();
             #endif
         }
         
@@ -184,20 +196,31 @@ void init_wifi() {
 }
 
 void handle_config() {
-    static uint32_t led_timer = 0;
+    int blink_count = 0;
+    uint32_t led_timer = 0;
+    uint32_t blink_freq = 500;
 
     if (hook_front_sensor.isPressed()) {
         init_wifi();
         delay(250);
         
         while(1) {
-            if (millis() - led_timer >= 500) {
+            if (millis() - led_timer >= blink_freq) {
                 led_timer = millis();
                 digitalWrite(LED_PIN, !digitalRead(LED_PIN));
+
+                if (blink_freq == 125) {
+                    blink_count++;
+                    if (blink_count == 20) {
+                        blink_count = 0;
+                        blink_freq = 500;
+                    }
+                }
             }
         
             if (need_to_save_params) {
                 need_to_save_params = false;
+                blink_freq = 125;
                 save_params();
             }
         
