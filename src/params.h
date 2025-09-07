@@ -12,7 +12,7 @@ struct params_format {
     int takeoffTime = 250;
     int climbTime = 750;
     int transitionTime = 500;
-    int flightTime = 20000;
+    int flightTime = 10000;
     int towAngle = -10;
     int circularAngle = -20;
     int takeoffAngle = -5;
