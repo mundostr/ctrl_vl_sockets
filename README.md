@@ -21,6 +21,8 @@ pip install esptool
 ## Modos de uso:
  - VUELO: conectando placa con gancho libre (en posición de circular). El led testigo permanece encendido.
  - CONFIGURACION: conectando la placa con gancho adelante (en posición de remolque). El led testigo parpadea.
+ 
+No se puede cambiar de modo por soft, es necesario desconectar el timer.
 
 <br>
 
@@ -43,17 +45,17 @@ const char* WIFI_AP_PASS = "clave_minimo_8_digitos";
 
 <br>
 
+## App de configuración
+La app para Android está disponible en [https://github.com/mundostr/f1a_config_python](https://github.com/mundostr/f1a_config_python). Descargar el APK de instalación desde Releases. 
+
 ## Configuración de parámetros de vuelo:
-Colocar la placa en modo CONFIGURACION y conectarse al punto de acceso que provee (configurado en el paso anterior como WIFI_AP_NAME). Se puede utilizar un teléfono, tablet o computadora sin problemas.
+Colocar la placa en modo CONFIGURACION y conectar el teléfono al punto de acceso que provee (configurado en el paso anterior como WIFI_AP_NAME).
 
-Abrir una ventana de navegador y visitar la siguiente dirección para descargar la app:
-```
-https://f1timer.up.railway.app/
-```
+Abrir la app y pulsar el botón Conectar. El sistema enlazará al websocket y recuperará los valores de parámetros actuales desde el timer.
 
-La app conectará al websocket y recuperará los valores de parámetros actuales. Habilitará también un botón para instalar, si se lo pulsa, generará un ícono de acceso rápido en el escritorio del dispositivo desde el cual se accede, para mayor comodidad.
+Los parámetros de tiempo (transición, vuelo, etc) se deben colocar en MILISEGUNDOS, EXCEPTO el tiempo de vuelo que se indica en SEGUNDOS para más comodidad; los parámetros de ángulos por su parte, se completan en GRADOS.
 
-Los parámetros de tiempo (transición, vuelo, etc) se deben colocar en MILISEGUNDOS, y los de ángulos en GRADOS. El CERO del estabilizador, se considera observando el fuse lateralmente, con el estabilizador a la DERECHA, y alineado con la línea central principal del fuse. Desde esta posición, los ángulos ANTIHORARIOS se toman como NEGATIVOS y los HORARIOS como POSITIVOS.
+El CERO del estabilizador, se considera observando el fuse lateralmente, con el estabilizador a la DERECHA, y alineado con la línea central principal del fuse. Desde esta posición, los ángulos ANTIHORARIOS se toman como NEGATIVOS y los HORARIOS como POSITIVOS.
 
 Ejemplo: para indicar ángulo de trepada o circular, se utilizarán números NEGATIVOS (el estabilizador debe rotar desde el CERO en sentido ANTIHORARIO); para transición, un valor POSITIVO (rota en sentido HORARIO).
 
