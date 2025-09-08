@@ -3,6 +3,8 @@
 #include "config.h"
 
 int angle_to_pulse(int angle) {
+    if (angle == 0) return STAB_SERVO_MID_PULSE;
+
     long pulse;
 
     angle = constrain(angle, -90, 90);
@@ -83,8 +85,8 @@ void init_sensors_and_buttons() {
 }
 
 void position_stab_servo(int angle) {
-    int pulse = angle_to_pulse(angle);
-    stab_servo_pulse = flight_params.stabServoInverted * pulse;
+    int pulse = angle_to_pulse(angle + flight_params.stabOffset);
+    stab_servo_pulse = (flight_params.stabServoInverted * pulse);
 }
 
 void IRAM_ATTR servos_isr() {
@@ -108,5 +110,11 @@ void init_servos() {
     timer1_enable(TIMER1_PRESCALER, TIM_EDGE, TIM_LOOP);
     timer1_write((uint32_t)(US_TO_TICKS * 1000));
 
-    stab_servo_pulse = STAB_SERVO_MID_PULSE;
+    int offset = angle_to_pulse(flight_params.stabOffset);
+
+    #ifdef DEBUG
+    Serial.printf("Offset pulse: %i\n", offset);
+    #endif
+
+    stab_servo_pulse = offset;
 }
