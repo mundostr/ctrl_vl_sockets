@@ -32,7 +32,7 @@ Modificar temporalmente en main.cpp la llamada a init_system con true:
 init_system(true);
 ```
 
-Compilar y subir el firmware, luego volver a false, compilar y subir nuevamente, para permitir que los futuros cambios desde la app queden almacenados.
+Compilar y subir el firmware. El sistema cargará al timer los valores predeterminados que estén configurados en el struct params_format dentro de params.h. Luego volver la llamada a false, compilar y subir nuevamente, para permitir que tome los cambios de configuración que lleguen desde la app, sino en cada inicio volverá a escribir los predeterminados.
 
 <br>
 
