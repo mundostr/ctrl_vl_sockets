@@ -46,7 +46,7 @@ const char* WIFI_AP_PASS = "clave_minimo_8_digitos";
 <br>
 
 ## App de configuración
-La app para Android está disponible en [https://github.com/mundostr/f1a_config_python](https://github.com/mundostr/f1a_config_python). Descargar el APK de instalación desde Releases. 
+La app para Android está disponible en [https://github.com/mundostr/f1a_config_python](https://github.com/mundostr/f1a_config_python) o [https://github.com/mundostr/f1a_config_cordova](https://github.com/mundostr/f1a_config_cordova). Descargar el APK de instalación desde Releases.
 
 ## Configuración de parámetros de vuelo:
 Colocar la placa en modo CONFIGURACION y conectar el teléfono al punto de acceso que provee (configurado en el paso anterior como WIFI_AP_NAME).
